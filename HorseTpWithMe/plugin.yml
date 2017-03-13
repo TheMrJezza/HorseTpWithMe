@@ -1,0 +1,26 @@
+name: HorseTpWithMe
+main: au.TheMrJezza.HorseTpWithMe.Main
+version: 2.0.4
+author: TheMrJezza
+softdepend: [CreativeGates, FBasics, Vault, GriefPrevention, WorldGuard]
+description: Teleports Horses/Llamas/Donkeys/Mules with you if you are sitting on one.
+commands:
+    htpreload:
+        description: Reloads the HorseTpWithMe Config file.
+    toggleBlock:
+        description: Blocks or Unblocks Animal Teleportation all Claims/Regions at your location.
+permissions:
+    horsetpwithme.pig:
+        default: op
+    horsetpwithme.llama:
+        default: op
+    horsetpwithme.horse:
+        default: op
+    horsetpwithme.nosaddle:
+        default: op
+    horsetpwithme.worldbypass:
+        default: op
+    horsetpwithme.reload:
+        default: op
+    horsetpwithme.toggleblock:
+        default: op
