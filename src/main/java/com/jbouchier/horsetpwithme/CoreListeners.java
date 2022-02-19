@@ -29,14 +29,6 @@ record CoreListeners(TeleportLogic tpLogic) implements Listener {
         }
 
         final Location from = evt.getFrom(), to = evt.getTo();
-
-        // Ignore redundant teleport event calls
-        if (from.equals(to)) return;
-
-        //
-        // If we get here, that means this is a legit teleport.
-        //
-
         final Player player = evt.getPlayer();
 
         // Perform check for vehicle.
@@ -44,10 +36,9 @@ record CoreListeners(TeleportLogic tpLogic) implements Listener {
         if (vehicle != null) {
             // We need to make sure that the player is controlling this vehicle.
             // Passengers other than the controlling player cannot invoke a teleport.
-            if (!vehicle.getPassengers().get(0).equals(player)) {
+            if (!tpLogic.isController(vehicle, player)) {
                 vehicle = null;
             }
-
         } else {
             // Only vehicles that the player was controlling are added to the lookup.
             // No need to check.

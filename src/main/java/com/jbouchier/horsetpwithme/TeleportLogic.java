@@ -17,8 +17,15 @@ class TeleportLogic {
         Bukkit.getScheduler().runTaskTimer(plugin, vehicleLookup::clear, 0L, 0L);
     }
 
+    boolean isController(Entity vehicle, Entity player) {
+        for (Entity p : vehicle.getPassengers()) {
+            if (p instanceof Player pl) return pl.equals(player);
+        }
+        return false;
+    }
+
     void storeVehicle(Entity vehicle, Entity rider) {
-        if (rider instanceof Player && vehicle.getPassengers().get(0).equals(rider))
+        if (rider instanceof Player && isController(vehicle, rider))
             vehicleLookup.put(rider, vehicle);
     }
 
@@ -51,6 +58,7 @@ class TeleportLogic {
                         }
                     }
                     passengers.add(passenger);
+                    passenger.teleport(to);
                 }
             }
             vehicle.teleport(to);
@@ -75,13 +83,23 @@ class TeleportLogic {
             //
             // ====
 
-            Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class), () -> {
-                reseat(vehicle, passengers);
-            }, 0);
+            Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class), () ->
+                    reseat(vehicle, passengers), 0);
         });
     }
 
     private void reseat(Entity vehicle, List<Entity> passengers) {
-
+        // We need to get the entity instance again in some cases.
+        if (!vehicle.isValid()) {
+            vehicle = Bukkit.getEntity(vehicle.getUniqueId());
+            if (vehicle == null || !vehicle.isValid()) return;
+        }
+        for (Entity passenger : passengers) {
+            if (!passenger.isValid()) {
+                passenger = Bukkit.getEntity(passenger.getUniqueId());
+                if (passenger == null || !passenger.isValid()) continue;
+            }
+            vehicle.addPassenger(passenger);
+        }
     }
 }
