@@ -24,14 +24,11 @@ class TeleportLogic {
     }
 
     boolean isController(Entity v, Entity r) {
-        for (Entity p : v.getPassengers())
-            if (p instanceof Player pl) return pl.equals(r);
-        return false;
+        for (Entity p : v.getPassengers()) if (p instanceof Player pl) return pl.equals(r); return false;
     }
 
     void storeVehicle(Entity vehicle, Entity rider) {
-        if (rider instanceof Player && isController(vehicle, rider))
-            vehicleLookup.put(rider, vehicle);
+        if (rider instanceof Player && isController(vehicle, rider)) vehicleLookup.put(rider, vehicle);
     }
 
     Entity retrieveVehicle(Player player) {
