@@ -18,10 +18,6 @@ record CoreListeners(TeleportLogic tpLogic) implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onPlayerTeleport(PlayerTeleportEvent evt) {
-
-        // Ignore useless Teleport causes.
-        // UNKNOWN: Getting bucked off, falling off in water, your vehicle dying, changing vehicles etc...
-        // CHORUS_FRUIT & ENDER_PEARL: Short range teleporting is graphically buggy. Can be fixed with packets.
         switch (evt.getCause()) {
             case UNKNOWN, CHORUS_FRUIT, ENDER_PEARL -> {
                 return;
@@ -30,20 +26,11 @@ record CoreListeners(TeleportLogic tpLogic) implements Listener {
 
         final Location from = evt.getFrom(), to = evt.getTo();
         final Player player = evt.getPlayer();
-
-        // Perform check for vehicle.
         Entity vehicle = player.getVehicle();
+
         if (vehicle != null) {
-            // We need to make sure that the player is controlling this vehicle.
-            // Passengers other than the controlling player cannot invoke a teleport.
-            if (!tpLogic.isController(vehicle, player)) {
-                vehicle = null;
-            }
-        } else {
-            // Only vehicles that the player was controlling are added to the lookup.
-            // No need to check.
-            vehicle = tpLogic.retrieveVehicle(player);
-        }
+            if (!tpLogic.isController(vehicle, player)) vehicle = null;
+        } else vehicle = tpLogic.retrieveVehicle(player);
 
         if (vehicle != null) tpLogic.processTeleport(vehicle, player, from, to);
     }

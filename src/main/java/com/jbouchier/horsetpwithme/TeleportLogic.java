@@ -1,7 +1,12 @@
 package com.jbouchier.horsetpwithme;
 
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
+import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 class TeleportLogic {
     private final HashMap<Entity, Entity> vehicleLookup = new HashMap<>();
@@ -17,10 +23,9 @@ class TeleportLogic {
         Bukkit.getScheduler().runTaskTimer(plugin, vehicleLookup::clear, 0L, 0L);
     }
 
-    boolean isController(Entity vehicle, Entity player) {
-        for (Entity p : vehicle.getPassengers()) {
-            if (p instanceof Player pl) return pl.equals(player);
-        }
+    boolean isController(Entity v, Entity r) {
+        for (Entity p : v.getPassengers())
+            if (p instanceof Player pl) return pl.equals(r);
         return false;
     }
 
@@ -33,11 +38,9 @@ class TeleportLogic {
         return vehicleLookup.get(player);
     }
 
-
     // TODO Add permission Checks.
     // TODO Add Multi-Passenger Support.
     void processTeleport(Entity vehicle, Player player, Location from, Location to) {
-
         // TODO Check if this teleport is allowed to happen.
         // Disabled Worlds, player doesn't have permission, disabled vehicle etc.
 
@@ -62,44 +65,48 @@ class TeleportLogic {
                 }
             }
             vehicle.teleport(to);
-
-            // ====
-            // Info Dump: Any teleport that doesn't require the client to "respawn" the vehicle,
-            // i.e. short range teleportation, will cause the vehicle to slowly drift to the
-            // destination, which is an issue. Server-side, the vehicle is at the destination,
-            // however, client-side the vehicle isn't. We should not re-seat the player unless the
-            // vehicle is at the correct position client-side.
-            // The solution is to send the client an Entity Spawn Packet for the vehicle.
-            // No need to send despawn/destroy packets.
-            // It's a little tricky though, Living Entities require a different Packet to Non-Living,
-            // however, all vehicles including living ones like horses use the non-living packet.
-            //
-            // THIS SECTION IS THE SOUL SINGLE REASON I HAVE NOT RELEASED AN UPDATE TO THE PLUGIN IN OVER
-            // 2 YEARS.
-            // WRITING THIS CODE IS SOMETHING I AM NOT FOND OF.
-            // TODO Use Packets to lessen the Visual Glitches of Instant Teleportation.
-            //
-            // PACKET CODE GOES HERE
-            //
-            // ====
-
-            Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class), () ->
-                    reseat(vehicle, passengers), 0);
+            Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class),
+                    () -> reseat(vehicle, passengers), 0
+            );
         });
     }
 
     private void reseat(Entity vehicle, List<Entity> passengers) {
-        // We need to get the entity instance again in some cases.
+        final Player rider = (Player) passengers.get(0);
+        final UUID uuid = vehicle.getUniqueId();
+
         if (!vehicle.isValid()) {
-            vehicle = Bukkit.getEntity(vehicle.getUniqueId());
-            if (vehicle == null || !vehicle.isValid()) return;
-        }
-        for (Entity passenger : passengers) {
-            if (!passenger.isValid()) {
-                passenger = Bukkit.getEntity(passenger.getUniqueId());
-                if (passenger == null || !passenger.isValid()) continue;
+            final Entity found = Bukkit.getEntity(uuid), original = vehicle;
+            if (found == null || !found.isValid()) {
+                Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class),
+                        () -> reseat(original, passengers), 1
+                );
+                return;
             }
-            vehicle.addPassenger(passenger);
+            vehicle = found;
         }
+
+        final net.minecraft.world.entity.Entity handle = ((CraftEntity) vehicle).getHandle();
+
+        sendPackets(rider,
+                new PacketPlayOutSpawnEntity(handle),
+                new PacketPlayOutEntityMetadata(vehicle.getEntityId(), handle.ai(), true)
+        );
+
+        Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class), () -> {
+            final Entity f = Bukkit.getEntity(uuid);
+            if (f == null || !f.isValid()) return;
+            for (Entity passenger : passengers) {
+                if (!passenger.isValid()) {
+                    passenger = Bukkit.getEntity(passenger.getUniqueId());
+                    if (passenger == null || !passenger.isValid()) continue;
+                }
+                f.addPassenger(passenger);
+            }
+        }, 1);
+    }
+
+    private void sendPackets(Player player, Packet<?>... packets) {
+        for (Packet<?> packet : packets) ((CraftPlayer) player).getHandle().b.a(packet);
     }
 }
