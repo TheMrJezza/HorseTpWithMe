@@ -1,7 +1,8 @@
-# HorseTpWithMe
-A Bukkit Plugin that allows a player to teleport with their Vehicles!
+# HorseTpWithMe - DEV
 
-This is the most recent source of HorseTpWithMe. It's actually newer (therefore buggier) than any released version of the plugin.
+### Welcome to the Dev Branch!
 
+HorseTpWithMe is getting fixed. As of 19 February 2022 work is being done to update and improve the plugin for newer
+versions of MineCraft.
 
-I WILL UPDATE THIS REPO SOON. THIS HASN'T BEEN UPDATED IN A WHILE, AND IT'S REALLLLYYY OLD. I DON'T USE THIS CODE FOR THE CURRENT RELEASE.
+More info will be added soon. Stay tuned!
