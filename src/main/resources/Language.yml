@@ -10,4 +10,4 @@ TELEPORT_AS_PASSENGER_ENABLED: "&eYou will no longer teleport with other players
 TELEPORT_AS_PASSENGER_DISABLED: "&eYou will now teleport with other players' vehicles."
 
 # DO NOT CHANGE THIS LINE:
-version: 1
+version: 2
