@@ -1,0 +1,71 @@
+# _   _                          _____       _       _     _    _                   
+#( ) ( )                        (_   _)     ( )  _  ( ) _ ( )_ ( )    /'\_/`\       
+#| |_| |   _    _ __   ___    __  | | _ _   | | ( ) | |(_)| ,_)| |__  |     |   __  
+#|  _  | /'_`\ ( '__)/',__) /'__`\| |( '_`\ | | | | | || || |  |  _ `\| (_) | /'__`\
+#| | | |( (_) )| |   \__, \(  ___/| || (_) )| (_/ \_) || || |_ | | | || | | |(  ___/
+#(_) (_)`\___/'(_)   (____/`\____)(_)| ,__/'`\___x___/'(_)`\__)(_) (_)(_) (_)`\____)
+#                                    | |                                            
+#             Plugin Yaml            (_)                                            
+
+name: HorseTpWithMe
+main: au.TheMrJezza.HorseTpWithMe.Main
+version: 3.2.0
+description: "Like your horse? Now you won't teleport without it!"
+author: "TheMrJezza"
+softdepend: [Vault, GriefPrevention, WorldGuard, Ridables, ProtocolLib]
+api-version: 1.13
+
+commands:
+  horsetpwithme:
+    description: Main Command for All HorseTpWithMe stuff.
+    usage: /<command> reload
+    aliases:
+    - htwm
+    - htpwm
+
+permissions:
+  horsetpwithme.*:
+    description: Grants access to every HorseTpWithMe Permission
+    default: op
+    children:
+      horsetpwithme.command.*:
+        description: Access to all HorseTpWithMe Commands!
+        default: op
+        children:
+          horsetpwithme.command.reload:
+            description: Teleport any Entity you can ride!
+            default: op
+      horsetpwithme.teleport.*:
+        description: Teleport any Entity you can ride!
+        default: true
+        children:
+          horsetpwithme.teleport.horse:
+            description: Teleport any type of horse!
+            default: op
+          horsetpwithme.teleport.donkey:
+            description: Teleport donkeys and mules!
+            default: op
+          horsetpwithme.teleport.boat:
+            description: Teleport boats, and any non-player passengers!
+            default: op
+          horsetpwithme.teleport.minecart:
+            description: Teleport minecarts!
+            default: op
+          horsetpwithme.teleport.pig:
+            description: Teleport pigs!
+            default: op
+          horsetpwithme.teleport.llama:
+            description: Teleport llamas!
+            default: op
+          horsetpwithme.ridables.*:
+            description: Teleport any enabled Ridables Entity!
+            default: op
+  horsetpwithme.requiresaddle:
+    description: Requires that all horses have saddles in order to teleport.
+    default: false
+  horsetpwithme.requiretamed:
+    description: Requires that all Tameable Entites be tamed in order to teleport.
+    default: false
+  horsetpwithme.denycrossworld:
+    description: Denys all teleports out of the players current world.
+    default: false

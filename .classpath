@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/jerem/Desktop/Spigot 1.13/spigot.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jerem/Desktop/ProtocolLib.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://ci.dmulloy2.net/job/ProtocolLib/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/jerem/Desktop/Spigot 1.13/plugins/GriefPrevention.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jerem/Desktop/Spigot 1.13/plugins/Ridables.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
