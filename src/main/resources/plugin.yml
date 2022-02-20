@@ -1,7 +1,7 @@
 name: HorseTpWithMe
 main: com.jbouchier.horsetpwithme.HorseTpWithMe
 version: 10
-api-version: 1.18
+api-version: 1.17
 description: "Like your horse? Now you won't teleport without it!"
 website: https://www.spigotmc.org/resources/horsetpwithme.8186/
 author: "Jeremy Bouchier (Aka: TheMrJezza)"
