@@ -17,9 +17,13 @@ public class HorseTpWithMe extends JavaPlugin {
     }
 
     public void onEnable() {
-        TeleportLogic tpLogic = new TeleportLogic(this);
+        TeleportLogic tpLogic = new TeleportLogic(this, determineProtocol());
         register(new CoreListeners(tpLogic));
         if (DETECT_NON_VANILLA_VEHICLES) register(new SpigotListeners(tpLogic));
+    }
+
+    private IProtocol determineProtocol() {
+        return null;
     }
 
     private void register(Listener listener) {

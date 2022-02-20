@@ -18,9 +18,15 @@ record CoreListeners(TeleportLogic tpLogic) implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onPlayerTeleport(PlayerTeleportEvent evt) {
-        switch (evt.getCause()) { case UNKNOWN, CHORUS_FRUIT, ENDER_PEARL -> { return; }}
+        switch (evt.getCause()) {
+            case UNKNOWN, CHORUS_FRUIT, ENDER_PEARL -> {
+                return;
+            }
+        }
 
         final Location from = evt.getFrom(), to = evt.getTo();
+        if (to == null) return;
+
         final Player player = evt.getPlayer();
         Entity vehicle = player.getVehicle();
 

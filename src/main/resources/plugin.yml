@@ -39,3 +39,17 @@ permissions:
   horsetpwithme.commands.htwm:
     description: Grants access to /horsetpwithme
     default: op
+  horsetpwithme.require_saddle:
+    description: Entities that can have a saddle, must have a saddle to teleport.
+    default: false
+  horsetpwithme.require_adult:
+    description: Unable to teleport Baby Animals.
+    default: false
+  horsetpwithme.require_tamed:
+    default: false
+    description: Unable to teleport non-tame animals.
+  horsetpwithme.deny_passenger_teleport:
+    description: Prevent Teleporting as a Passenger
+    default: false
+  horsetpwithme.deny_cross_world:
+    description: Prevent Teleporting vehicles outside the world they're in.

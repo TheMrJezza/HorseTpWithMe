@@ -1,14 +1,9 @@
 package com.jbouchier.horsetpwithme;
 
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
-import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_18_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import org.bukkit.World;
+import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -17,14 +12,17 @@ import java.util.List;
 import java.util.UUID;
 
 class TeleportLogic {
+    private final IProtocol protocol;
     private final HashMap<Entity, Entity> vehicleLookup = new HashMap<>();
 
-    TeleportLogic(HorseTpWithMe plugin) {
+    TeleportLogic(HorseTpWithMe plugin, IProtocol protocol) {
         Bukkit.getScheduler().runTaskTimer(plugin, vehicleLookup::clear, 0L, 0L);
+        this.protocol = protocol;
     }
 
     boolean isController(Entity v, Entity r) {
-        for (Entity p : v.getPassengers()) if (p instanceof Player pl) return pl.equals(r); return false;
+        for (Entity p : v.getPassengers()) if (p instanceof Player pl) return pl.equals(r);
+        return false;
     }
 
     void storeVehicle(Entity vehicle, Entity rider) {
@@ -38,8 +36,43 @@ class TeleportLogic {
     // TODO Add permission Checks.
     // TODO Add Multi-Passenger Support.
     void processTeleport(Entity vehicle, Player player, Location from, Location to) {
-        // TODO Check if this teleport is allowed to happen.
-        // Disabled Worlds, player doesn't have permission, disabled vehicle etc.
+
+        final World wTo = to.getWorld(), wFrom = from.getWorld();
+        if (wTo == null || wFrom == null) return;
+
+        if (!isAuthed(player, "horsetpwithme.teleport.",
+                "*", vehicle.getType().name())) {
+            return;
+        }
+
+        boolean clearChests = false;
+
+        if ((vehicle instanceof Steerable steerable && !steerable.hasSaddle()) ||
+            (vehicle instanceof AbstractHorse horse && horse.getInventory().getSaddle() == null)) {
+            if (player.hasPermission("horsetpwithme.require_saddle")) return;
+        }
+
+        if (vehicle instanceof Tameable tame && !tame.isTamed()) {
+            if (player.hasPermission("horsetpwithme.require_tamed")) return;
+        }
+
+        if (vehicle instanceof Ageable ageable && !ageable.isAdult()) {
+            if (player.hasPermission("horsetpwithme.require_adult")) return;
+        }
+
+        if (!wTo.equals(wFrom)) {
+            if (player.hasPermission("horsetpwithme.deny_cross_world")) return;
+            if (player.hasPermission("horsetpwithme.disabled_world." + wTo.getName().toLowerCase())) return;
+            if (isAuthed(player, "horsetpwithme.empty_chests_",
+                    "to." + wTo.getName().toLowerCase(),
+                    "from." + wFrom.getName().toLowerCase())) {
+                clearChests = true;
+            }
+        }
+
+        VehicleTeleportEvent event = new VehicleTeleportEvent(vehicle, from, to, player, clearChests);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
 
         Bukkit.getScheduler().runTask(JavaPlugin.getPlugin(HorseTpWithMe.class), () -> {
 
@@ -58,14 +91,19 @@ class TeleportLogic {
                         }
                     }
                     passengers.add(passenger);
-                    passenger.teleport(to);
+                    passenger.teleport(event.getTo());
                 }
             }
-            vehicle.teleport(to);
+            vehicle.teleport(event.getTo());
             Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class),
                     () -> reseat(vehicle, passengers), 0
             );
         });
+    }
+
+    private boolean isAuthed(Player player, String permBase, String... keys) {
+        for (String key : keys) if (player.hasPermission((permBase + key).toLowerCase())) return true;
+        return false;
     }
 
     private void reseat(Entity vehicle, List<Entity> passengers) {
@@ -83,12 +121,7 @@ class TeleportLogic {
             vehicle = found;
         }
 
-        final net.minecraft.world.entity.Entity handle = ((CraftEntity) vehicle).getHandle();
-
-        sendPackets(rider,
-                new PacketPlayOutSpawnEntity(handle),
-                new PacketPlayOutEntityMetadata(vehicle.getEntityId(), handle.ai(), true)
-        );
+        protocol.updateVehicle(rider, vehicle);
 
         Bukkit.getScheduler().runTaskLater(JavaPlugin.getPlugin(HorseTpWithMe.class), () -> {
             final Entity f = Bukkit.getEntity(uuid);
@@ -101,9 +134,5 @@ class TeleportLogic {
                 f.addPassenger(passenger);
             }
         }, 1);
-    }
-
-    private void sendPackets(Player player, Packet<?>... packets) {
-        for (Packet<?> packet : packets) ((CraftPlayer) player).getHandle().b.a(packet);
     }
 }
