@@ -25,9 +25,6 @@ permissions:
       horsetpwithme.teleport.*: true
       horsetpwithme.messages.*: true
       horsetpwithme.commands.*: true
-  horsetpwithme.teleport.*:
-    default: true
-    description: Teleport anything you can ride!
   horsetpwithme.messages.*:
     default: op
     description: All messages will be visible!
@@ -53,3 +50,7 @@ permissions:
     default: false
   horsetpwithme.deny_cross_world:
     description: Prevent Teleporting vehicles outside the world they're in.
+    default: not op
+  horsetpwithme.teleport_passengers:
+    default: true
+    description: Teleport Passengers with you!
