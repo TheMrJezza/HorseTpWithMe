@@ -4,10 +4,8 @@ MUST_HAVE_SADDLE: "&cAnimals need a saddle to teleport when available!"
 NO_TELEPORT_PERMISSION: "&cYou do not have permission to teleport that Entity Type!"
 CHEST_EMPTIED_FROM_WORLD: "§eThe chest on your vehicle was cleared!"
 CHEST_EMPTIED_TO_WORLD: "§eThe chest on your vehicle was cleared!"
+CHESTS_EMPTIED_PASSENGERS: "§eThe chests on your passengers have been cleared!"
 DESTINATION_WORLD_DISABLED: "&cYou cannot teleport vehicles into this world!"
 CANNOT_LEAVE_WORLD: "&cYou cannot teleport vehicles out of the previous world!"
 TELEPORT_AS_PASSENGER_ENABLED: "&eYou will no longer teleport with other players' vehicles."
 TELEPORT_AS_PASSENGER_DISABLED: "&eYou will now teleport with other players' vehicles."
-
-# DO NOT CHANGE THIS LINE:
-version: 2

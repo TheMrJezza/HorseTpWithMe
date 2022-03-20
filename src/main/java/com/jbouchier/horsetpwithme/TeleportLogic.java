@@ -2,8 +2,11 @@ package com.jbouchier.horsetpwithme;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.*;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,10 +18,25 @@ import java.util.UUID;
 class TeleportLogic {
     private final IProtocol protocol;
     private final HashMap<Entity, Entity> vehicleLookup = new HashMap<>();
+    private final NamespacedKey namespace;
 
     TeleportLogic(HorseTpWithMe plugin, IProtocol protocol) {
         Bukkit.getScheduler().runTaskTimer(plugin, vehicleLookup::clear, 0L, 0L);
         this.protocol = protocol;
+        namespace = new NamespacedKey(plugin, "tap_status");
+    }
+
+    private static void clearChests(Player player, Entity entity, int clearChests) {
+        if (clearChests < 0 || clearChests > 2) return;
+        if (entity instanceof ChestedHorse ch && ch.isCarryingChest()) {
+            ch.setCarryingChest(false);
+            ch.setCarryingChest(true);
+            switch (clearChests) {
+                case 0 -> player.sendMessage(MessageCache.CHEST_EMPTIED_TO_WORLD.toString());
+                case 1 -> player.sendMessage(MessageCache.CHEST_EMPTIED_FROM_WORLD.toString());
+                case 2 -> player.sendMessage(MessageCache.CHESTS_EMPTIED_PASSENGERS.toString());
+            }
+        }
     }
 
     boolean isController(@NotNull Entity v, Entity r) {
@@ -28,6 +46,18 @@ class TeleportLogic {
 
     void storeVehicle(Entity vehicle, Entity rider) {
         if (rider instanceof Player && isController(vehicle, rider)) vehicleLookup.put(rider, vehicle);
+    }
+
+    void setTapStatus(Player player, boolean status) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        if (status) {
+            player.sendMessage(MessageCache.TELEPORT_AS_PASSENGER_ENABLED.toString());
+            pdc.remove(namespace);
+        }
+        else {
+            pdc.set(namespace, PersistentDataType.INTEGER, 1);
+            player.sendMessage(MessageCache.TELEPORT_AS_PASSENGER_DISABLED.toString());
+        }
     }
 
     Entity retrieveVehicle(Player player) {
@@ -42,19 +72,18 @@ class TeleportLogic {
         if (!player.hasPermission("horsetpwithme.teleport." + vehicle.getType().name().toLowerCase())) {
 
             // TODO Replace with proper configurable message
-            player.sendMessage("You are not authorised to teleport this vehicle!");
-
+            player.sendMessage(MessageCache.NO_TELEPORT_PERMISSION.toString());
             return;
         }
 
-        boolean clearChests = false;
+        int clearChests = -1;
 
         if ((vehicle instanceof Steerable steerable && !steerable.hasSaddle()) ||
             (vehicle instanceof AbstractHorse horse && horse.getInventory().getSaddle() == null)) {
             if (player.hasPermission("horsetpwithme.require_saddle")) {
 
                 // TODO Replace with proper configurable message
-                player.sendMessage("You must put a saddle on this vehicle!");
+                player.sendMessage(MessageCache.MUST_HAVE_SADDLE.toString());
                 return;
             }
         }
@@ -63,7 +92,7 @@ class TeleportLogic {
             if (player.hasPermission("horsetpwithme.require_tamed")) {
 
                 // TODO Replace with proper configurable message
-                player.sendMessage("You must tame this vehicle!");
+                player.sendMessage(MessageCache.MUST_BE_TAMED.toString());
                 return;
             }
         }
@@ -72,7 +101,7 @@ class TeleportLogic {
             if (player.hasPermission("horsetpwithme.require_adult")) {
 
                 // TODO Replace with proper configurable message
-                player.sendMessage("This Vehicle is too young!");
+                player.sendMessage(MessageCache.MUST_BE_ADULT.toString());
                 return;
             }
         }
@@ -81,43 +110,43 @@ class TeleportLogic {
             if (player.hasPermission("horsetpwithme.deny_cross_world")) {
 
                 // TODO Replace with proper configurable message
-                player.sendMessage("You are not authorised to teleport vehicles into another world!");
+                player.sendMessage(MessageCache.CANNOT_LEAVE_WORLD.toString());
                 return;
             }
             if (player.hasPermission("horsetpwithme.disabled_world." + wTo.getName().toLowerCase())) {
 
                 // TODO Replace with proper configurable message
-                player.sendMessage("You are not authorised to teleport this vehicle into THIS world!");
+                player.sendMessage(MessageCache.DESTINATION_WORLD_DISABLED.toString());
                 return;
             }
-            if (isAuthed(player,
-                    "to." + wTo.getName().toLowerCase(),
-                    "from." + wFrom.getName().toLowerCase())) {
-                clearChests = true;
-            }
+            clearChests = isAuthed(player, "to." + wTo.getName().toLowerCase(),
+                    "from." + wFrom.getName().toLowerCase());
         }
 
-        VehicleTeleportEvent event = new VehicleTeleportEvent(vehicle, from, to, player, clearChests);
+        VehicleTeleportEvent event = new VehicleTeleportEvent(vehicle, from, to, player, clearChests >= 0);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-
-            // TODO - DELETE THIS DEBUG MESSAGE
-            player.sendMessage("Event Cancelled!");
             return;
         }
 
+        if (event.isClearingChests() && clearChests < 0) clearChests = 0;
+
+        int finalClearChests = clearChests;
         Bukkit.getScheduler().runTask(JavaPlugin.getPlugin(HorseTpWithMe.class), () -> {
 
             List<Entity> passengers = new ArrayList<>();
             passengers.add(player);
 
+            clearChests(player, vehicle, finalClearChests);
             if (player.hasPermission("horsetpwithme.teleport_passengers")) {
                 for (Entity passenger : vehicle.getPassengers()) {
                     if (passenger instanceof Player pl) {
-                        if (pl.hasPermission("horsetpwithme.deny_passenger_teleport") || !getTAPStatus(pl))
+                        if (pl.hasPermission("horsetpwithme.deny_passenger_teleport") || getTAPStatus(pl)) {
                             continue;
+                        }
                     }
                     passengers.add(passenger);
+                    if (finalClearChests >= 0) clearChests(player, passenger, 3);
                     passenger.teleport(event.getTo());
                     passenger.setFallDistance(-Float.MAX_VALUE);
                 }
@@ -130,15 +159,16 @@ class TeleportLogic {
         });
     }
 
-    private boolean getTAPStatus(Player player) {
-
-        // TODO - Implement a proper T.A.P. Status System.
-        return true;
+    boolean getTAPStatus(Player player) {
+        return player.getPersistentDataContainer().getOrDefault(namespace, PersistentDataType.INTEGER, 0) != 0;
     }
 
-    private boolean isAuthed(Player player, String @NotNull ... keys) {
-        for (String key : keys) if (player.hasPermission(("horsetpwithme.empty_chests_" + key).toLowerCase())) return true;
-        return false;
+    private int isAuthed(Player player, String @NotNull ... keys) {
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            if (player.hasPermission(("horsetpwithme.empty_chests_" + key).toLowerCase())) return i;
+        }
+        return -1;
     }
 
     private void reseat(@NotNull Entity vehicle, @NotNull List<Entity> passengers) {
