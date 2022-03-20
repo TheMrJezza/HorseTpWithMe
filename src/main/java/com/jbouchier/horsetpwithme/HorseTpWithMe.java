@@ -1,6 +1,5 @@
 package com.jbouchier.horsetpwithme;
 
-import com.jbouchier.horsetpwithme.nms.Protocol_v1_18_R1;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -59,7 +58,7 @@ public class HorseTpWithMe extends JavaPlugin {
     }
 
     private IProtocol determineProtocol() {
-        return new Protocol_v1_18_R1();
+        return new ProtocolHackMagic();
     }
 
     private void register(Listener listener) {
