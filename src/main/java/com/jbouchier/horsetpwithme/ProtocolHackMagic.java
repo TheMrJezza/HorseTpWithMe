@@ -1,6 +1,8 @@
 package com.jbouchier.horsetpwithme;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 import net.minecraft.network.protocol.game.PacketPlayOutUpdateAttributes;
@@ -8,8 +10,10 @@ import net.minecraft.network.syncher.DataWatcher;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.entity.EntityLiving;
+import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeMapBase;
 import net.minecraft.world.entity.ai.attributes.AttributeModifiable;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,12 +21,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class ProtocolHackMagic implements IProtocol {
 
     private final Method dataWatcher = getMethod(net.minecraft.world.entity.Entity.class, DataWatcher.class);
     private final Method attributeMapBase = getMethod(EntityLiving.class, AttributeMapBase.class);
+    private final Method slotReader = getSlotMethod();
     private final Method attributeMod = getMethod(AttributeMapBase.class, Collection.class);
     private final Field playerConnection = getConnection();
     private final Method sendPacket = getPacketSender();
@@ -32,6 +39,7 @@ public class ProtocolHackMagic implements IProtocol {
             JavaPlugin.getPlugin(HorseTpWithMe.class).getLogger().warning("Server Protocol Unsupported!");
             StringBuilder sb = new StringBuilder("Bad Protocol(s): [ ");
             if (dataWatcher == null) sb.append("dataWatcher, ");
+            if (slotReader == null) sb.append("slotReader, ");
             if (attributeMapBase == null) sb.append("attributeMapBase, ");
             if (attributeMod == null) sb.append("attributeMod, ");
             if (playerConnection == null) sb.append("playerConnection, ");
@@ -50,10 +58,18 @@ public class ProtocolHackMagic implements IProtocol {
         return null;
     }
 
-    private static Method getMethod(Class<?> clazz, Class<?> ret) {
-        for (Method m : clazz.getMethods()) {
-            if (m.getReturnType().equals(ret)) return m;
+    private static Method getSlotMethod() {
+        for (Method m : EntityLiving.class.getMethods()) {
+            if (m.getReturnType().equals(ItemStack.class) &&
+                m.getParameterTypes().length == 1 && m.getParameterTypes()[0].equals(EnumItemSlot.class))
+                return m;
         }
+        return null;
+    }
+
+    private static Method getMethod(Class<?> clazz, Class<?> ret) {
+        for (Method m : clazz.getMethods())
+            if (m.getReturnType().equals(ret)) return m;
         return null;
     }
 
@@ -66,7 +82,7 @@ public class ProtocolHackMagic implements IProtocol {
 
     @Override
     public void updateVehicle(Player rider, Entity vehicle) {
-        if (dataWatcher == null || attributeMapBase == null || attributeMod == null || playerConnection == null || sendPacket == null) {
+        if (dataWatcher == null || attributeMapBase == null || attributeMod == null || playerConnection == null || sendPacket == null || slotReader == null) {
             return;
         }
         try {
@@ -79,9 +95,14 @@ public class ProtocolHackMagic implements IProtocol {
 
             if (handle instanceof EntityLiving living) {
                 AttributeMapBase base = (AttributeMapBase) attributeMapBase.invoke(living);
-                sendPackets(rider, new PacketPlayOutUpdateAttributes(vehicle.getEntityId(),
-                        (Collection<AttributeModifiable>) attributeMod.invoke(base)
-                ));
+                List<Pair<EnumItemSlot, ItemStack>> equipment = new ArrayList<>();
+                for (EnumItemSlot slot : EnumItemSlot.values())
+                    equipment.add(new Pair<>(slot, (ItemStack) slotReader.invoke(living, slot)));
+                sendPackets(
+                        rider, new PacketPlayOutUpdateAttributes(vehicle.getEntityId(),
+                                (Collection<AttributeModifiable>) attributeMod.invoke(base)
+                        ), new PacketPlayOutEntityEquipment(vehicle.getEntityId(), equipment)
+                );
             }
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
