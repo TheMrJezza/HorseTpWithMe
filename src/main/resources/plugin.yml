@@ -1,56 +1,32 @@
-name: HorseTpWithMe
 main: com.jbouchier.horsetpwithme.HorseTpWithMe
-version: 10
-api-version: 1.17
-description: "Like your horse? Now you won't teleport without it!"
+version: ${version}
+name: ${name}
+api-version: ${api-version} # <- Plugin is always built around the latest api-version,
+# but we support all versions down to 1.8.9
+description: ${description}
+authors: [ JBouchier, TheMrJezza ]
 website: https://www.spigotmc.org/resources/horsetpwithme.8186/
-author: "Jeremy Bouchier (Aka: TheMrJezza)"
 commands:
-  horsetpwithme:
-    permission: horsetpwithme.commands.htwm
-    description: Main Command for All HorseTpWithMe stuff.
-    usage: /<command> < reload | getperm >
-    aliases:
-      - htwm
-      - htpwm
+  PermCheck:
+    description: "Test if you have a permission node"
+    permission: "horsetpwithme.debug.permcheck"
+    permission-message: "This command is of no use to you..."
+  Reseat:
+    description: "Reseat yourself on your vehicle!"
+    permission: horsetpwithme.command.reseat
   TeleportAsPassenger:
-    description: Toggle Your Teleport-As-Passenger status.
+    description: "Toggle your T.A.P. Status. If disabled, you cannot teleport as a passenger."
+    permission: horsetpwithme.command.taptoggle
     usage: /<command>
     aliases:
       - taptoggle
+  HorseTpWithMe:
+    description: "Admin command for HorseTpWithMe. Used to reload files and view permission nodes of vehicles"
+    permission: horsetpwithme.command.horsetpwithme
+    usage: /<command> [reload|getperm]
+    aliases:
+      - htmw
 permissions:
-  horsetpwithme.*:
-    default: op
-    children:
-      horsetpwithme.teleport.*: true
-      horsetpwithme.messages.*: true
-      horsetpwithme.commands.*: true
-  horsetpwithme.messages.*:
-    default: op
-    description: All messages will be visible!
-  horsetpwithme.commands.*:
-    description: Use any HorseTpWithMe command!
-    default: op
-    children:
-      horsetpwithme.commands.htwm: true
-  horsetpwithme.commands.htwm:
-    description: Grants access to /horsetpwithme
-    default: op
-  horsetpwithme.require_saddle:
-    description: Entities that can have a saddle, must have a saddle to teleport.
-    default: false
-  horsetpwithme.require_adult:
-    description: Unable to teleport Baby Animals.
-    default: false
-  horsetpwithme.require_tamed:
-    default: false
-    description: Unable to teleport non-tame animals.
-  horsetpwithme.deny_passenger_teleport:
-    description: Prevent Teleporting as a Passenger
-    default: false
-  horsetpwithme.deny_cross_world:
-    description: Prevent Teleporting vehicles outside the world they're in.
-    default: not op
-  horsetpwithme.teleport_passengers:
+  horsetpwithme.debug.permcheck:
     default: true
-    description: Teleport Passengers with you!
+    description: "A permission used for debugging HorseTpWithMe."
