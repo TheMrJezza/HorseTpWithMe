@@ -20,7 +20,8 @@ public class HorseTpWithMe extends JavaPlugin {
 
         setExecutor("TeleportAsPassenger", new TeleportAsPassenger());
         setExecutor("Reseat", new Reseat());
-        setExecutor("HorseTpwithMe", new MainCommand());
+        setExecutor("HorseTpWithMe", new MainCommand());
+        Language.reload();
     }
 
     @Override
