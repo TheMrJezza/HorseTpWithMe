@@ -4,6 +4,7 @@ import com.jbouchier.horsetpwithme.cmd.MainCommand;
 import com.jbouchier.horsetpwithme.cmd.Reseat;
 import com.jbouchier.horsetpwithme.cmd.TeleportAsPassenger;
 import com.jbouchier.horsetpwithme.util.DetailLogger;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,8 +14,10 @@ import static com.jbouchier.horsetpwithme.util.GeneralUtil.runTask;
 import static com.jbouchier.horsetpwithme.util.GeneralUtil.setExecutor;
 
 public class HorseTpWithMe extends JavaPlugin {
+
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(TeleportListeners.INSTANCE, this);
+        new Metrics(this, 3502);
+        getServer().getPluginManager().registerEvents(EventListeners.INSTANCE, this);
         runTask(PermissionHandler::build, 0);
         DetailLogger.forceLog("§aThe plugin is enabled and working!");
 
@@ -22,6 +25,7 @@ public class HorseTpWithMe extends JavaPlugin {
         setExecutor("Reseat", new Reseat());
         setExecutor("HorseTpWithMe", new MainCommand());
         Language.reload();
+        UpdateManager.grabLatestAndNotify();
     }
 
     @Override

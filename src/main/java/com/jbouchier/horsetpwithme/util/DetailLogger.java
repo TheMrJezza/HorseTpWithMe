@@ -1,6 +1,7 @@
 package com.jbouchier.horsetpwithme.util;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 
 public class DetailLogger {
     private static final boolean ENABLED = true;
@@ -11,6 +12,10 @@ public class DetailLogger {
     }
 
     public static void forceLog(String message, Object... params) {
-        Bukkit.getConsoleSender().sendMessage(String.format(PREFIX + message, params));
+        forceLog(Bukkit.getConsoleSender(), message, params);
+    }
+
+    public static void forceLog(CommandSender cs, String message, Object... params) {
+        cs.sendMessage(String.format(PREFIX + message, params));
     }
 }

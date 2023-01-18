@@ -1,11 +1,14 @@
 package com.jbouchier.horsetpwithme.util;
 
+import com.jbouchier.horsetpwithme.HorseTpWithMe;
 import com.jbouchier.horsetpwithme.Language;
 import com.jbouchier.horsetpwithme.ScreenerException;
 import com.jbouchier.horsetpwithme.event.VehicleTeleportEvent;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.*;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +20,21 @@ import static com.jbouchier.horsetpwithme.util.GeneralUtil.*;
 // Blink is a static implementation of burst...
 // Burst was the first successful "same tick" teleport method
 public class BlinkTeleportUtil {
+
+    public static final boolean BUKKIT_REFRESH;
+
+    static {
+        boolean newAPIs = false;
+        try {
+            Player.class.getMethod("showEntity", Plugin.class, Entity.class);
+            Player.class.getMethod("hideEntity", Plugin.class, Entity.class);
+            newAPIs = true;
+        } catch (NoSuchMethodException e) {
+            DetailLogger.forceLog("§cOutdated Bukkit API§7: §eHorseTpWithMe won't resolve graphical \"bugs\" that occur.");
+            DetailLogger.forceLog("§eThe plugin will try to avoid glitches on a \"best effort\" basis.");
+        }
+        BUKKIT_REFRESH = newAPIs;
+    }
 
     // teleport an entity and passengers as fast as possible
     // DO NOT CALL THIS METHOD UNLESS THE DRIVER HAS BEEN EJECTED!
@@ -47,23 +65,27 @@ public class BlinkTeleportUtil {
         VehicleTeleportEvent event = new VehicleTeleportEvent(driver, vehicle, passengers, destination);
         if (event.isCancelled()) return;
 
-        // teleport passengers and vehicle to destination
-        {
-            vehicle.teleport(destination);
-            vehicle.setFallDistance(-Float.MAX_VALUE);
-            EntityNMS.refreshEntity(driver, vehicle);
-            for (Entity passenger : passengers) {
-                passenger.teleport(destination);
-                passenger.setFallDistance(-Float.MAX_VALUE);
-                EntityNMS.refreshEntity(driver, passenger);
+        runTask(() -> {
+            // teleport passengers and vehicle to destination
+            {
+                vehicle.teleport(event.getTo());
+                vehicle.setFallDistance(-Float.MAX_VALUE);
+                refreshEntity(driver, vehicle);
+                //EntityNMS.refreshEntity(driver, vehicle);
+                for (Entity passenger : passengers) {
+                    passenger.teleport(event.getTo());
+                    passenger.setFallDistance(-Float.MAX_VALUE);
+                    refreshEntity(driver, passenger);
+                    //EntityNMS.refreshEntity(driver, passenger);
+                }
             }
-        }
 
-        // attempt to notify the driver if filtering has occurred
-        if (filtered) sendKeyedMessage(PASSENGERS_FILTERED, driver);
+            // attempt to notify the driver if filtering has occurred
+            if (filtered) sendKeyedMessage(PASSENGERS_FILTERED, driver);
 
-        // run our logic at the end of the current tick
-        runTask(() -> stageOne(vehicle, driver, passengers), 0);
+            // run our logic at the end of the current tick
+            runTask(() -> stageOne(vehicle, driver, passengers), 0);
+        }, BUKKIT_REFRESH ? 0 : 2L);
     }
 
     private static void stageOne(
@@ -89,8 +111,10 @@ public class BlinkTeleportUtil {
             playerValid = driver;
         }
 
-        vehicleValid.addPassenger(playerValid);
-        runTask(() -> stageTwo(vehicleValid, (Player) playerValid, passengers), 1);
+        runTask(() -> {
+            vehicleValid.addPassenger(playerValid);
+            runTask(() -> stageTwo(vehicleValid, (Player) playerValid, passengers), 1);
+        }, BUKKIT_REFRESH ? 0 : 2);
     }
 
     private static void stageTwo(
@@ -100,17 +124,12 @@ public class BlinkTeleportUtil {
         toValidate.add(vehicle);
         toValidate.add(driver);
         Map<UUID, Entity> found = findEntities(vehicle.getWorld(), toValidate.toArray(new Entity[0]));
-        if (found.size() != toValidate.size()) {
-            runTask(() -> stageTwo(vehicle, driver, passengers), 1);
-            return;
+        if (found.size() != toValidate.size()) runTask(() -> stageTwo(vehicle, driver, passengers), 1);
+        else {
+            Entity vVehicle = found.get(vehicle.getUniqueId());
+            for (Entity e : passengers) vVehicle.addPassenger(found.get(e.getUniqueId()));
+            refreshEntity((Player) found.get(driver.getUniqueId()), vVehicle);//.sendPassengers((Player) found.get(driver.getUniqueId()), vVehicle);
         }
-        Entity vVehicle = found.get(vehicle.getUniqueId());
-        Player vDriver = (Player) found.get(driver.getUniqueId());
-        for (Entity e : passengers) {
-            vVehicle.addPassenger(found.get(e.getUniqueId()));
-        }
-        EntityNMS.sendPassengers(vDriver, vVehicle);
-
     }
 
     // used to 'screen' the driver and vehicle for primary restrictions
@@ -195,5 +214,16 @@ public class BlinkTeleportUtil {
         // - test if destination is safe from hazards (lava, fire etc..)
         // - test if destination is a trap (GriefPrevention Claim with no access etc.)
         return input.clone();
+    }
+
+    public static void refreshEntity(@NotNull Player player, @NotNull org.bukkit.entity.Entity entity) {
+        if (BUKKIT_REFRESH) {
+            // This allows the next line to function.
+            player.hideEntity(JavaPlugin.getPlugin(HorseTpWithMe.class), entity);
+            // This is the important stuff.
+            player.showEntity(JavaPlugin.getPlugin(HorseTpWithMe.class), entity);
+        } else {
+            // TODO Insert ProtocolLib / NMS Solution here.
+        }
     }
 }

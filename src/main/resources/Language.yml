@@ -13,4 +13,4 @@ TELEPORT_AS_PASSENGER_DISABLED: "&eYou will now teleport with other players' veh
 PASSENGERS_FILTERED: "&eSome passengers were excluded from teleporting."
 
 # DO NOT CHANGE THIS LINE:
-version: 2
+version: ${language-version}

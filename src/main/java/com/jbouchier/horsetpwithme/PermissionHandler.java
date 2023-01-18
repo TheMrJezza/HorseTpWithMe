@@ -30,6 +30,7 @@ public class PermissionHandler {
         Permission mainPerm = new Permission(base + '*', PermissionDefault.OP);
         registerPerm(mainPerm);
 
+        make("notify_updates", mainPerm, true);
         // global perms
         bulk(mainPerm, false, base, "require_saddle", "require_tamed", "require_adult",
                 "deny_passenger_teleport", "match_vehicle_teleports");
