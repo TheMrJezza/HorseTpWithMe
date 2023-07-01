@@ -124,7 +124,7 @@ public class HorseTpWithMe extends JavaPlugin implements Listener {
                         return false;
                     });
                 }
-                
+
                 recordStack(tpRecord, pass, playerStack);
             }
         }
