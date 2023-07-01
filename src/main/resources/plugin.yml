@@ -7,10 +7,6 @@ description: ${description}
 authors: [ JBouchier, TheMrJezza ]
 website: https://www.spigotmc.org/resources/horsetpwithme.8186/
 commands:
-  PermCheck:
-    description: "Test if you have a permission node"
-    permission: "horsetpwithme.debug.permcheck"
-    permission-message: "This command is of no use to you..."
   Reseat:
     description: "Reseat yourself on your vehicle!"
     permission: horsetpwithme.command.reseat
@@ -26,6 +22,10 @@ commands:
     usage: /<command> [reload|getperm]
     aliases:
       - htmw
+  HorseDebug:
+    description: "Toggle Debug Stuff"
+  LeashExperiment:
+    description: "Toggle Experimental Stuff"
 permissions:
   horsetpwithme.debug.permcheck:
     default: true
