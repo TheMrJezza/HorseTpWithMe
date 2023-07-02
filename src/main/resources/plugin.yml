@@ -24,9 +24,9 @@ commands:
       - htmw
   HorseDebug:
     description: "Toggle Debug Stuff"
-  LeashExperiment:
-    description: "Toggle Experimental Stuff"
+    permission: "horsetpwithme.debug.permcheck"
+    permission-message: "§aNo need to debug right now!"
 permissions:
   horsetpwithme.debug.permcheck:
-    default: true
+    default: op
     description: "A permission used for debugging HorseTpWithMe."
