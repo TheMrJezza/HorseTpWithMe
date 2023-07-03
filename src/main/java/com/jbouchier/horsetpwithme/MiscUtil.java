@@ -41,8 +41,8 @@ public class MiscUtil {
         return result;
     }
 
-    public static boolean getTapStatus(Player player) {
-        return player.getPersistentDataContainer().getOrDefault(getTapKey(),
+    public static boolean isTapDisabled(Player player) {
+        return !player.getPersistentDataContainer().getOrDefault(getTapKey(),
                 PersistentDataType.BOOLEAN, true
         );
     }

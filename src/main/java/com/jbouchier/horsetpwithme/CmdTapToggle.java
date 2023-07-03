@@ -14,7 +14,7 @@ public class CmdTapToggle implements CommandExecutor {
     ) {
         final var target = MiscUtil.extractTarget(cs, args);
         if (target != null) {
-            var val = !MiscUtil.getTapStatus(target);
+            var val = MiscUtil.isTapDisabled(target);
             target.getPersistentDataContainer().set(MiscUtil.getTapKey(), PersistentDataType.BOOLEAN, val);
 
             target.sendMessage("§eT.A.P Status§7: " + (val ? "§aEnabled!" : "§cDisabled!"));

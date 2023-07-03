@@ -36,8 +36,9 @@ class TeleportRecord {
         if (!tpRecord.contains(holder)) tpRecord.add(holder);
     }
 
+    @SuppressWarnings("deprecation")
     void addStackPair(Entity bottom, Entity top) {
-        if (top instanceof Player player && !player.equals(owner) && !MiscUtil.getTapStatus(player)) {
+        if (top instanceof Player player && !player.equals(owner) && MiscUtil.isTapDisabled(player)) {
             if (DataState.getInstance().isDebugOn()) {
                 Bukkit.broadcastMessage("§7[§aHTpWM Debug§7] §cPlayer Passenger Excluded§7: §a" + owner.getName());
                 Bukkit.broadcastMessage("Info: " + player.getName() + " has T.A.P disabled.");
