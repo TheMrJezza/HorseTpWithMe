@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 
 public final class DataState {
+    private boolean debugOn = false;
     private final HorseTpWithMe plugin;
     private final HashMap<Player, Entity> vehicleCache;
 
@@ -26,6 +27,14 @@ public final class DataState {
 
     public @Nullable Entity getVehicle(@NotNull Player player) {
         return player.isInsideVehicle() ? player.getVehicle() : vehicleCache.get(player);
+    }
+
+    public boolean isDebugOn() {
+        return debugOn;
+    }
+
+    void setDebugOn(boolean debugOn) {
+        this.debugOn = debugOn;
     }
 
     private static final class DataStateHolder {

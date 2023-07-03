@@ -1,5 +1,6 @@
 package com.jbouchier.horsetpwithme;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -36,6 +37,13 @@ class TeleportRecord {
     }
 
     void addStackPair(Entity bottom, Entity top) {
+        if (top instanceof Player player && !player.equals(owner) && !MiscUtil.getTapStatus(player)) {
+            if (DataState.getInstance().isDebugOn()) {
+                Bukkit.broadcastMessage("§7[§aHTpWM Debug§7] §cPlayer Passenger Excluded§7: §a" + owner.getName());
+                Bukkit.broadcastMessage("Info: " + player.getName() + " has T.A.P disabled.");
+            }
+            return;
+        }
         this.stacked.put(top, bottom);
         if (!tpRecord.contains(bottom)) tpRecord.add(bottom);
         if (!tpRecord.contains(top)) tpRecord.add(top);

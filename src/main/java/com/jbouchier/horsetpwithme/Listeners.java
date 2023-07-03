@@ -40,7 +40,6 @@ public class Listeners implements Listener {
         final var tpRecord = new TeleportRecord(player, destination, plugin);
         final var leashedAll = MiscUtil.getNearbyLeashedEntities(event.getFrom());
 
-        // Leash Teleporting
         if (!leashedAll.isEmpty()) {
             final var playerLeashed = MiscUtil.getLeashed(leashedAll, player);
             playerLeashed.forEach(leashed -> {

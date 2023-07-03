@@ -5,7 +5,6 @@ import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -15,9 +14,9 @@ import java.util.List;
 public final class PermissionState {
 
     private enum PermissionType {
-        TP_VEHICLE("vehicle"), // Teleporting your vehicle
-        TP_PASSENGER("passenger"), // Teleporting passengers in your vehicle or on your leashed entities
-        TP_LEASH("leash"); // Teleporting entities leashed to you
+        TP_VEHICLE("vehicle"),
+        TP_PASSENGER("passenger"),
+        TP_LEASH("leash");
         public final String node;
 
         PermissionType(String permName) {
@@ -92,9 +91,9 @@ public final class PermissionState {
             return false;
         });
         if (required.isEmpty()) return false;
-        if (JavaPlugin.getPlugin(HorseTpWithMe.class).verboseDebugging) {
+        if (DataState.getInstance().isDebugOn()) {
             Bukkit.broadcastMessage("§7[§aHTpWM Debug§7] §cTeleport Denied§7: §a" + player.getName());
-            required.forEach(perm -> Bukkit.broadcastMessage("§7- §f" + perm.replaceAll("\\.", "§f.§f")));
+            required.forEach(perm -> Bukkit.broadcastMessage("§7- §f" + perm));
         }
         return true;
     }
