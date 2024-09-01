@@ -1,7 +1,7 @@
-package com.jbouchier.horsetpwithme;
+package unused.com.jbouchier.horsetpwithme;
 
-import com.jbouchier.horsetpwithme.util.BlinkTeleportUtil;
-import com.jbouchier.horsetpwithme.util.GeneralUtil;
+import unused.com.jbouchier.horsetpwithme.util.BlinkTeleportUtil;
+import unused.com.jbouchier.horsetpwithme.util.GeneralUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -15,6 +15,7 @@ import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.HashMap;
 
+@SuppressWarnings({"UnstableApiUsage", "deprecation"})
 public class EventListeners implements Listener {
 
     public final static EventListeners INSTANCE = new EventListeners();

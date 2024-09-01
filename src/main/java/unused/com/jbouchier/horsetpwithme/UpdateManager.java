@@ -1,8 +1,8 @@
-package com.jbouchier.horsetpwithme;
+package unused.com.jbouchier.horsetpwithme;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.jbouchier.horsetpwithme.util.DetailLogger;
+import unused.com.jbouchier.horsetpwithme.util.DetailLogger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -12,8 +12,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static com.jbouchier.horsetpwithme.util.GeneralUtil.runAsync;
-import static com.jbouchier.horsetpwithme.util.GeneralUtil.runTask;
+import static unused.com.jbouchier.horsetpwithme.util.GeneralUtil.runAsync;
+import static unused.com.jbouchier.horsetpwithme.util.GeneralUtil.runTask;
 
 public class UpdateManager {
 

@@ -1,4 +1,4 @@
-package com.jbouchier.horsetpwithme;
+package unused.com.jbouchier.horsetpwithme;
 
 import org.jetbrains.annotations.NotNull;
 

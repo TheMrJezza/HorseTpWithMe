@@ -1,32 +1,9 @@
-main: ${groupId}.${name}
-version: ${version}
-name: ${name}
-api-version: ${api-version} # <- Plugin is always built around the latest api-version,
-# but we support all versions down to 1.8.9
-description: ${description}
+main: "net.horsetpwithme.HorseTpWithMe"
+name: "HorseTpWithMe"
+version: ${project.version}
 authors: [ JBouchier, TheMrJezza ]
+softdepend:
+  - LeadTheWay
+  - Telentity
 website: https://www.spigotmc.org/resources/horsetpwithme.8186/
-commands:
-  PermCheck:
-    description: "Test if you have a permission node"
-    permission: "horsetpwithme.debug.permcheck"
-    permission-message: "This command is of no use to you..."
-  Reseat:
-    description: "Reseat yourself on your vehicle!"
-    permission: horsetpwithme.command.reseat
-  TeleportAsPassenger:
-    description: "Toggle your T.A.P. Status. If disabled, you cannot teleport as a passenger."
-    permission: horsetpwithme.command.taptoggle
-    usage: /<command>
-    aliases:
-      - taptoggle
-  HorseTpWithMe:
-    description: "Admin command for HorseTpWithMe. Used to reload files and view permission nodes of vehicles"
-    permission: horsetpwithme.command.horsetpwithme
-    usage: /<command> [reload|getperm]
-    aliases:
-      - htmw
-permissions:
-  horsetpwithme.debug.permcheck:
-    default: true
-    description: "A permission used for debugging HorseTpWithMe."
+api-version: "1.18"
